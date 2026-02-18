@@ -30,7 +30,7 @@ A modern, privacy-focused bookmark manager with real-time synchronization across
 1. **Clone the repository**
 
    ```bash
-   git clone <your-repo-url>
+   git clone https://github.com/abhay299/smart-bookmark.git
    cd smart-bookmark
    ```
 
@@ -213,17 +213,36 @@ pnpm lint
 4. Click "Save changes"
 5. The card updates instantly and syncs in real-time
 
-## 🤝 Contributing
+## 🧠 Problems I Solved
 
-Contributions are welcome! Please feel free to submit a Pull Request.
+### 1. Keeping bookmarks in sync in real time
 
-### Development Workflow
+- **The problem**: I wanted every open tab to stay in sync without manual refresh. If I added, edited, or deleted a bookmark in one tab, the others should update automatically. Doing this with just `fetch` and local state would get messy and easy to break.
+- **What I tried first**: I started with a simple `fetch` on page load inside `BookmarkList` and manually updated the array when I added or deleted a bookmark. This worked in a single tab, but other tabs never saw the change.
+- **Final approach**:
+  - I used **Supabase Realtime** subscriptions in `BookmarkList` to listen to `INSERT`, `UPDATE`, and `DELETE` events on the `bookmarks` table.
+  - On each event, I update the local `bookmarks` state:
+    - `INSERT`: prepend the new bookmark to the list.
+    - `UPDATE`: map over the list and replace the matching `id`.
+    - `DELETE`: filter out the deleted `id`.
+  - I still run an initial `SELECT` on mount, but after that the UI stays up to date from the realtime channel.
+- **Why this is better**: All tabs stay in sync, the code is simple to reason about, and I do not need to refetch the whole list after every action. Supabase’s RLS also guarantees that even with realtime, each user only sees their own data.
 
-1. Fork the repository
-2. Create a feature branch (`git checkout -b feature/amazing-feature`)
-3. Commit your changes (`git commit -m 'Add amazing feature'`)
-4. Push to the branch (`git push origin feature/amazing-feature`)
-5. Open a Pull Request
+### 2. Adding a safe edit flow without breaking data rules
+
+- **The problem**: I needed an “Edit bookmark” feature that lets users change URL and title, but I had to respect:
+  - The **unique constraint** on `(user_id, url)` (no duplicate URLs per user).
+  - **Row-Level Security** so a user cannot edit someone else’s bookmark.
+  - The existing realtime behavior and type safety.
+- **What I tried first**: My first thought was to call Supabase directly from the client (like add/delete) with `.update()` and let RLS handle the rest. This worked, but it spread logic across the client and made the rules harder to see and test.
+- **Final approach**:
+  - I created a dedicated API route at `app/api/bookmarks/[id]/route.ts` that:
+    - Validates `title` and `url` and checks URL format.
+    - Uses the **server Supabase client** to get the current user from cookies.
+    - Runs an `UPDATE` on `bookmarks` with a `user_id` check and sets `updated_at`.
+    - Handles Postgres error code `23505` to show a friendly “already bookmarked” message.
+  - On the frontend, the edit modal in `BookmarkCard` calls this route and then updates local state (and Realtime also sends the update).
+- **Why this is better**: All edit rules live in one place (the API route), the UI stays simple, and the database remains the single source of truth. This also made it easier to explain and debug the behavior during development.
 
 ## 📝 License
 
