@@ -6,6 +6,21 @@ import { Bookmark, LogOut, Plus, User } from 'lucide-react'
 import { useRouter } from 'next/navigation'
 import toast from 'react-hot-toast'
 
+const menuItems = [
+    {
+      id: 'add' as const,
+      label: 'Add Bookmark',
+      icon: Plus,
+      description: 'Save a new link',
+    },
+    {
+      id: 'bookmarks' as const,
+      label: 'Your Bookmarks',
+      icon: Bookmark,
+      description: 'View all saved',
+    },
+  ]
+
 interface SidebarProps {
   user: any
   activeSection: 'add' | 'bookmarks'
@@ -25,21 +40,6 @@ export function Sidebar({ user, activeSection, onSectionChange }: SidebarProps) 
       toast.error('Failed to logout')
     }
   }
-
-  const menuItems = [
-    {
-      id: 'add' as const,
-      label: 'Add Bookmark',
-      icon: Plus,
-      description: 'Save a new link',
-    },
-    {
-      id: 'bookmarks' as const,
-      label: 'Your Bookmarks',
-      icon: Bookmark,
-      description: 'View all saved',
-    },
-  ]
 
   return (
     <aside className="w-64 h-screen bg-gray-900 border-r border-gray-800 flex flex-col fixed left-0 top-0">

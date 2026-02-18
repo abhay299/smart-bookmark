@@ -41,12 +41,8 @@ export function AddBookmarkForm({ onBookmarkAdded }: AddBookmarkFormProps) {
         setTitle(new URL(urlToFetch).hostname)
       }
     } catch (error) {
-      console.error('Error fetching title:', error)
-      try {
-        setTitle(new URL(urlToFetch).hostname)
-      } catch {
-        setTitle(urlToFetch)
-      }
+        console.error('Error fetching title:', error)
+        toast.error('Error fetching title. Please enter a title manually.')
     } finally {
       setIsLoadingTitle(false)
     }
