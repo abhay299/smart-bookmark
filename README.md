@@ -9,6 +9,7 @@ A modern, privacy-focused bookmark manager with real-time synchronization across
 - 🔐 **Google OAuth Authentication** - Secure, passwordless login
 - 🔒 **Private Bookmarks** - Your bookmarks are completely private
 - ⚡ **Real-Time Sync** - Changes instantly appear across all your devices and tabs
+- ✏️ **Edit Bookmarks** - Update bookmark titles and URLs in place
 - 🤖 **Auto-Fetch Titles** - Automatically extracts page titles from URLs
 - 🚫 **Duplicate Prevention** - Can't accidentally save the same URL twice
 - 🔍 **Search & Filter** - Quickly find bookmarks by title or URL
@@ -27,39 +28,43 @@ A modern, privacy-focused bookmark manager with real-time synchronization across
 ### Installation
 
 1. **Clone the repository**
+
    ```bash
    git clone <your-repo-url>
    cd smart-bookmark
    ```
 
 2. **Install dependencies**
+
    ```bash
    pnpm install
    ```
 
 3. **Set up environment variables**
-   
+
    Create a `.env` file:
+
    ```bash
-   NEXT_SUPABASE_URL=your_supabase_url
-   NEXT_ANON_KEY=your_supabase_anon_key
+   NEXT_PUBLIC_SUPABASE_URL=your_supabase_url
+   NEXT_PUBLIC_SUPABASE_ANON_KEY=your_supabase_anon_key
    ```
 
 4. **Set up the database**
-   
+
    Run the SQL in `supabase-schema.sql` in your Supabase SQL Editor
 
 5. **Configure Google OAuth**
-   
+
    See [Environment Setup Guide](./docs/02-environment-setup.md#4-google-oauth-setup) for detailed steps
 
 6. **Run the development server**
+
    ```bash
    pnpm dev
    ```
 
 7. **Open the app**
-   
+
    Visit [http://localhost:3000](http://localhost:3000)
 
 ## 📚 Documentation
@@ -78,8 +83,8 @@ Complete documentation is available in the `/docs` folder:
 | [08-deployment.md](./docs/08-deployment.md) | Deploying to Vercel |
 
 ## 🛠 Tech Stack
-
 ### Frontend
+
 - **[Next.js 16](https://nextjs.org/)** - React framework with App Router
 - **[React 19](https://react.dev/)** - UI library
 - **[TypeScript](https://www.typescriptlang.org/)** - Type safety
@@ -88,6 +93,7 @@ Complete documentation is available in the `/docs` folder:
 - **[React Hot Toast](https://react-hot-toast.com/)** - Notifications
 
 ### Backend & Database
+
 - **[Supabase](https://supabase.com/)**
   - PostgreSQL database
   - Row-Level Security (RLS)
@@ -95,18 +101,20 @@ Complete documentation is available in the `/docs` folder:
   - Real-time subscriptions
 
 ### Deployment
+
 - **[Vercel](https://vercel.com/)** - Hosting and deployment
 
 ## 🏗 Project Structure
 
-```
+```text
 smart-bookmark/
 ├── app/
 │   ├── login/              # Authentication page
 │   ├── dashboard/          # Main app
 │   ├── api/
 │   │   ├── auth/callback/  # OAuth callback
-│   │   └── fetch-title/    # Title fetching API
+│   │   ├── fetch-title/    # Title fetching API
+│   │   └── bookmarks/[id]/ # Bookmark update API
 │   ├── layout.tsx          # Root layout
 │   ├── page.tsx            # Home (redirects)
 │   └── globals.css         # Global styles
@@ -116,7 +124,8 @@ smart-bookmark/
 │   └── providers/          # App providers
 ├── lib/
 │   ├── supabase/           # Supabase clients
-│   └── utils.ts            # Utility functions
+│   ├── utils.ts            # Utility functions
+│   └── constants.ts        # Shared constants (e.g. regex)
 ├── types/
 │   └── database.types.ts   # TypeScript types
 ├── docs/                   # Documentation
@@ -169,23 +178,10 @@ pnpm lint
 
 ### Environment Variables
 
-| Variable | Description | Example |
-|----------|-------------|---------|
-| `NEXT_SUPABASE_URL` | Supabase project URL | `https://xxx.supabase.co` |
-| `NEXT_ANON_KEY` | Supabase anonymous key | `eyJhbGc...` |
-
-## 🚢 Deployment
-
-Deploy to Vercel in minutes:
-
-1. Push code to GitHub
-2. Import repository in Vercel
-3. Add environment variables
-4. Deploy!
-
-See [Deployment Guide](./docs/08-deployment.md) for detailed instructions.
-
-[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https://github.com/your-username/smart-bookmark)
+| Variable                   | Description          | Example                   |
+|----------------------------|----------------------|---------------------------|
+| `NEXT_PUBLIC_SUPABASE_URL` | Supabase project URL | `https://xxx.supabase.co` |
+| `NEXT_PUBLIC_SUPABASE_ANON_KEY` | Supabase anonymous key | `eyJhbGc...`              |
 
 ## 📖 Usage Guide
 
@@ -208,6 +204,14 @@ See [Deployment Guide](./docs/08-deployment.md) for detailed instructions.
 2. Click the delete button (trash icon)
 3. Confirm deletion
 4. Bookmark removed instantly
+
+### Editing a Bookmark
+
+1. Hover over a bookmark card
+2. Click the edit button (pencil icon)
+3. Update the URL and/or title in the modal
+4. Click "Save changes"
+5. The card updates instantly and syncs in real-time
 
 ## 🤝 Contributing
 
@@ -235,7 +239,7 @@ If you encounter any issues:
 
 ## 🎉 Live Demo
 
-Visit the live demo: [https://smart-bookmark.vercel.app](https://smart-bookmark.vercel.app)
+Visit the live demo: [https://abhay-smart-bookmark.vercel.app](https://abhay-smart-bookmark.vercel.app)
 
 ---
 
