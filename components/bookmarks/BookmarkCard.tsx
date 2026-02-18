@@ -5,7 +5,16 @@ import { Input } from '@/components/ui/Input'
 import { createClient } from '@/lib/supabase/client'
 import { getDomainFromUrl, getFaviconUrl, isValidUrl } from '@/lib/utils'
 import type { Bookmark } from '@/types/database.types'
-import { Calendar, ExternalLink, Globe, Loader2, Pencil, Trash2, X } from 'lucide-react'
+import {
+  AlertTriangle,
+  Calendar,
+  ExternalLink,
+  Globe,
+  Loader2,
+  Pencil,
+  Trash2,
+  X,
+} from 'lucide-react'
 import { useEffect, useMemo, useState } from 'react'
 import toast from 'react-hot-toast'
 
@@ -19,6 +28,7 @@ export function BookmarkCard({ bookmark, onDelete, onUpdated }: BookmarkCardProp
   const [isDeleting, setIsDeleting] = useState(false)
   const [isHovered, setIsHovered] = useState(false)
   const [isEditOpen, setIsEditOpen] = useState(false)
+  const [isConfirmOpen, setIsConfirmOpen] = useState(false)
   const [editUrl, setEditUrl] = useState(bookmark.url)
   const [editTitle, setEditTitle] = useState(bookmark.title)
   const [editUrlError, setEditUrlError] = useState('')
@@ -33,10 +43,6 @@ export function BookmarkCard({ bookmark, onDelete, onUpdated }: BookmarkCardProp
   }, [isEditOpen, bookmark.title, bookmark.url])
 
   const handleDelete = async () => {
-    if (!confirm('Are you sure you want to delete this bookmark?')) {
-      return
-    }
-
     setIsDeleting(true)
 
     try {
@@ -54,6 +60,7 @@ export function BookmarkCard({ bookmark, onDelete, onUpdated }: BookmarkCardProp
       toast.error('Failed to delete bookmark')
     } finally {
       setIsDeleting(false)
+      setIsConfirmOpen(false)
     }
   }
 
@@ -69,6 +76,12 @@ export function BookmarkCard({ bookmark, onDelete, onUpdated }: BookmarkCardProp
   const handleCloseEdit = () => {
     setIsEditOpen(false)
     setEditUrlError('')
+  }
+
+  const handleOpenConfirm = () => setIsConfirmOpen(true)
+  const handleCloseConfirm = () => {
+    if (isDeleting) return
+    setIsConfirmOpen(false)
   }
 
   const handleSaveEdit = async () => {
@@ -204,7 +217,7 @@ export function BookmarkCard({ bookmark, onDelete, onUpdated }: BookmarkCardProp
               <button
                 onClick={(e) => {
                   e.stopPropagation()
-                  handleDelete()
+                  handleOpenConfirm()
                 }}
                 disabled={isDeleting}
                 className={`
@@ -228,6 +241,66 @@ export function BookmarkCard({ bookmark, onDelete, onUpdated }: BookmarkCardProp
         </div>
       </div>
       </div>
+
+      {isConfirmOpen && (
+        <div
+          className="fixed inset-0 z-40 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4"
+          onClick={handleCloseConfirm}
+          role="dialog"
+          aria-modal="true"
+        >
+          <div
+            className="w-full max-w-lg bg-linear-to-br from-gray-900 to-gray-950 border border-gray-700 rounded-2xl p-6 shadow-2xl"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="flex items-start gap-4">
+              <div className="mt-1">
+                <div className="inline-flex items-center justify-center w-9 h-9 rounded-xl bg-red-500/10 border border-red-500/40">
+                  <AlertTriangle className="w-5 h-5 text-red-400" />
+                </div>
+              </div>
+              <div className="flex-1">
+                <h3 className="text-lg font-semibold text-white">
+                  Delete this bookmark?
+                </h3>
+                <p className="mt-1 text-sm text-gray-400">
+                  This action cannot be undone. The bookmark for{' '}
+                  <span className="text-gray-200">{domain}</span> will be permanently
+                  removed.
+                </p>
+              </div>
+            </div>
+
+            <div className="mt-5 flex justify-end gap-3">
+              <Button
+                type="button"
+                variant="ghost"
+                onClick={handleCloseConfirm}
+                disabled={isDeleting}
+              >
+                Cancel
+              </Button>
+              <Button
+                type="button"
+                variant="danger"
+                onClick={() => {
+                  void handleDelete()
+                }}
+                disabled={isDeleting}
+              >
+                {isDeleting ? (
+                  <>
+                    <Loader2 className="w-4 h-4 animate-spin mr-2" />
+                    Deleting...
+                  </>
+                ) : (
+                  'Delete'
+                )}
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {isEditOpen && (
         <div
